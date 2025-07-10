@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+* {
+  font-weight: 500;
+  &::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+  }
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+input{
+  cursor: text;
+}
