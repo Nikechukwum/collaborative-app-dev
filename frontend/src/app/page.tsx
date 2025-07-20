@@ -6,22 +6,26 @@ import { InputField } from "@/components/InputText";
 import { useState } from "react";
 import axios from "axios";
 
+interface OutputTypes {
+  forecast: null|number;
+  currentReg: number|null;
+  upper: null|number;
+  lower: null|number;
+  regEnd: null|string;
+  sd: null|number;
+  timeline: null|number
+}
+
 const MainPage = () => {
-  const [regStart, setRegStart] = useState<string>('')
-  const [eventStart, setEventStart] = useState<string>('')
-  const [currentReg, setCurrentReg] = useState<number>(0)
-  const [timeline, setTimeline] = useState<string>('')
-  const [targetAudience, setTargetAudience] = useState()
-  const [predictionInterval, setPredictionInterval] = useState('---')
-  const [timeTillEvent, setTimeTillEvent] = useState('---')
-  const [sd, setSd] = useState('---')
   const [loading, setLoading] = useState(false)
+  const [inputs, setInputs] = useState({regStart: '', regEnd: '', currentReg: 0, timeline: 'auto', targetAudience: ''})
+  const [outputs, setOutputs] = useState<OutputTypes>({forecast: null, currentReg: null, upper: null, lower: null, regEnd: null, sd: null, timeline: null})
 
   const timelineOptions = [
-    {label: '0%', value: '0'},
-    {label: '25%', value: '25'},
-    {label: '50%', value: '50'},
-    {label: '75%', value: '75'},
+    {label: 'Auto', value: 'auto'},
+    {label: '25%', value: '0.25'},
+    {label: '50%', value: '0.50'},
+    {label: '75%', value: '0.75'},
   ]
 
   const audienceOptions = [
@@ -31,77 +35,129 @@ const MainPage = () => {
     {label: 'Education Property Managers', value: '3'},
   ]
 
-  function getWeeksRemaining(regStartStr: string, eventStartStr: string, percentageElapsed: number) {
-    const regStart = new Date(regStartStr);
-    const eventStart = new Date(eventStartStr);
+  function timeIntoRegistration(startDate: string, endDate: string) {
+    const today = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
 
-    const totalRegPeriodMs = eventStart.getTime() - regStart.getTime();
-    const elapsedMs = (percentageElapsed / 100) * totalRegPeriodMs;
+    // Ensure time is normalized (set to midnight)
+    today.setHours(0, 0, 0, 0);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
 
-    const currentDate = new Date(regStart.getTime() + elapsedMs);
-    const remainingMs = eventStart.getTime() - currentDate.getTime();
+    const totalDuration = end.getTime() - start.getTime();
+    const elapsed = today.getTime() - start.getTime();
 
-    const remainingWeeks = Math.floor(remainingMs / (1000 * 60 * 60 * 24 * 7));
-    return remainingWeeks;
-}
+    if (today < start) return 0;          // Not started yet
+    if (today > end) return 1;            // Already ended
+
+    const pct = elapsed / totalDuration;
+    return Math.min(Math.max(pct, 0), 1); // Clamp between 0 and 1
+  }
+
+
+//   function getWeeksRemaining(regStartStr: string, eventStartStr: string, percentageElapsed: number) {
+//     const regStart = new Date(regStartStr);
+//     const eventStart = new Date(eventStartStr);
+
+//     const totalRegPeriodMs = eventStart.getTime() - regStart.getTime();
+//     const elapsedMs = (percentageElapsed / 100) * totalRegPeriodMs;
+
+//     const currentDate = new Date(regStart.getTime() + elapsedMs);
+//     const remainingMs = eventStart.getTime() - currentDate.getTime();
+
+//     const remainingWeeks = Math.floor(remainingMs / (1000 * 60 * 60 * 24 * 7));
+//     return remainingWeeks;
+// }
 
   async function handleExecution(){
     setLoading(true)
-    const weeksToEvent  = getWeeksRemaining(regStart, eventStart, Number(timeline))
+    const {regStart, regEnd, timeline, currentReg} = inputs
+    // console.log(timeIntoRegistration(regStart, regEnd))
+    // console.log(inputs)
     try {
-      const response = await axios.post("http://localhost:8000/api/run", {
-        target_audience: targetAudience,
-        current_registrations: currentReg,
-        event_start: eventStart,
-        reg_start: regStart,
-        weeks_to_event: weeksToEvent
+
+      if(!(regStart) || !(regEnd)){
+        alert('Please fill in the date inputs')
+        return
+      }
+      const response = await axios.post("http://localhost:8000/api/forecast", {
+        current_reg: Number(currentReg),
+        timeline: timeline==='auto'? timeIntoRegistration(regStart, regEnd) : Number(timeline)
       });
+
+      if(response.data){
+        const {forecast, lower, upper, sd} = response.data
+        setOutputs((prev)=> ({...prev, 
+          forecast: forecast, 
+          lower: lower, 
+          upper: upper,
+          sd: sd,
+          currentReg: currentReg, 
+          regEnd: regEnd,
+          timeline: timeline==='auto'? timeIntoRegistration(regStart, regEnd) : Number(timeline)
+        }))
+      }
 
     } catch (error) {
       window.alert(`An error occured: ${error}`);
+    } finally {
       setLoading(false)
     }
+  }
 
+  function calcForecastRange(){
+    const {forecast, lower} = outputs
+    if(!forecast || !lower){
+      return ''
+    }
+    const range = ((forecast-lower)/forecast) * 100
+    return ` ±${range.toFixed(2)}%`
   }
 
   return ( 
     <div className="grow flex flex-col gap-y-5 overflow-scroll h-full">
 
       <section className="w-full flex flex-col justify-center gap-y-2 px-5 flex-[23%]  rounded-2xl border-2 border-[#E6E8EB] bg-slate-50">
-        <div className="flex gap-x-5 w-full h-fit">
+        <div className="flex gap-x-7 w-full h-fit">
           <InputField 
           label={<span className="text-sm w-fit max-w-[170px] h-[50px] flex items-center">Registrations start date:</span>}
-          dataState={regStart}
-          updateState={setRegStart}
+          dataObject={inputs}
+          updateFunct={setInputs}
+          fieldId="regStart"
           date
           />
 
           <InputField 
-          label={<span className="text-sm w-fit max-w-[170px] h-[50px] flex items-center">Event start date:</span>}
-          dataState={eventStart}
-          updateState={setEventStart}
+          label={<span className="text-sm w-fit max-w-[170px] h-[50px] flex items-center">Registrations end date:</span>}
+          dataObject={inputs}
+          updateFunct={setInputs}
+          fieldId="regEnd"
           date
           />
 
           <InputField 
           label={<span className="text-sm w-[130px] h-[50px] flex items-center">Current number of registrations:</span>}
-          dataState={currentReg}
-          updateState={setCurrentReg}
+          dataObject={inputs}
+          updateFunct={setInputs}
+          fieldId="currentReg"
           />
 
           <InputDropdown 
           label={<span className="text-sm w-fit max-w-[150px] h-[50px] flex items-center">Time into registration period:</span>}
-          dataState={timeline}
-          updateState={setTimeline}
+          dataObject={inputs}
+          updateFunct={setInputs}
+          fieldId="timeline"
           options={timelineOptions}
           />
 
-          <InputDropdown 
+          {/* <InputDropdown 
           label={<span className="text-sm w-fit max-w-[150px] h-[50px] flex items-center">Target Audience:</span>}
-          dataState={targetAudience}
-          updateState={setTargetAudience}
+          dataObject={inputs}
+          updateFunct={setInputs}
+          fieldId="targetAudience"
           options={audienceOptions}
-          />
+          /> */}
 
         </div>
 
@@ -122,25 +178,28 @@ const MainPage = () => {
             <div className="w-5 h-full bg-[#58A1E9]" />
             <div className="w-fit h-full py-1.5 flex flex-col justify-between">
               <span className="text-lg h-6">Forecast</span>
-              <span className="text-[#58A1E9] text-2xl !font-bold"><span className="text-5xl">--</span></span>
-              <span className="text-[#3A4148] text-xs">Registrations by ---</span>
+              <span className="text-[#58A1E9] text-2xl !font-extrabold">
+                <span className="text-5xl">{outputs.forecast ?? '--'}</span>
+                <span className="text-3xl">{calcForecastRange()}</span>
+              </span>
+              <span className="text-[#3A4148] text-xs">Registrations by {outputs.regEnd || '---'}</span>
             </div>
           </div>
 
           <div className="h-20 w-full px-3">
-            <div className="rounded-lg border border-[#C2CDD8] grid grid-cols-[1fr_0.8fr] auto-rows-max place-content-center gap-y-2 h-full w-full text-xs px-3">
-              <span className="h-fit">Time till event: {timeTillEvent}</span>
-              <span className="text-right h-fit">Confidence Level: 95%</span>
-              <span className="h-fit">Prediction Interval: {predictionInterval} </span>
-              <span className="text-right h-fit">Standard deviation: {sd}</span>
+            <div className="rounded-lg border border-[#C2CDD8] grid grid-cols-2 place-content-center gap-y-2 h-full w-full text-xs px-3">
+              <span className="h-fit">Lower limit: {outputs.lower?? '--'}</span>
+              <span className="h-fit">Upper limit: {outputs.upper?? '--'} </span>
+              <span className="h-fit">Confidence Level: 95%</span>
+              <span className="h-fit">Standard deviation: {(outputs.sd)?.toFixed(2)?? '--'}</span>
             </div>
           </div>
         </section>
 
         <section className="w-[500px] rounded-2xl border-2 border-[#E6E8EB] bg-slate-50 py-5 flex flex-col">
             <h2 className="text-sm px-5">Chart</h2>
-            <div className="grow flex items-center py-3 justify-center">
-                <Graph forecast={0} current={0}/>
+            <div className="grow flex items-center justify-center">
+                <Graph forecast={outputs.forecast} current={outputs.currentReg} timeline={outputs.timeline}/>
             </div>
         </section>
       </div>

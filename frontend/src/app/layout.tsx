@@ -26,9 +26,13 @@ export default function RootLayout({
       <body
         className={`${inter.className} antialiased bg-[#F1F3F5]`}>
           <Header />
-          <div className="w-full h-[calc(100vh-100px)] flex gap-x-5 p-5">
+          <div className="hidden lg:flex w-full h-[calc(100vh-100px)] gap-x-5 p-5">
             <Sidebar />
             {children}
+          </div>
+          <div className="bg-white lg:hidden fixed z-[99] top-0 left-0 w-full h-full flex flex-col items-center justify-center gap-y-2">
+            <span>Not designed for the screen size!</span>
+            <span>Expand window or use a device with a wider screen (like a PC)</span>
           </div>
       </body>
     </html>

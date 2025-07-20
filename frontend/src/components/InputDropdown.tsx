@@ -3,19 +3,31 @@ import { Dispatch, ReactNode, SetStateAction, useState } from "react";
 
 type Props = {
     label: ReactNode;
-    dataState: any;
-    updateState: Dispatch<SetStateAction<any>>;
     options: {label:string, value: string}[]
+    dataObject: any;
+    fieldId: string;
+    updateFunct: Dispatch<SetStateAction<any>>;
 }
-export const InputDropdown = ({label, dataState, updateState, options}: Props) => {
-    const [selectedOption, setSelectedOption] = useState(1)
+export const InputDropdown = ({label, dataObject, updateFunct, fieldId, options}: Props) => {
+    const [selectedOption, setSelectedOption] = useState(0)
     const [dropdown, setDropdown] = useState(false)
 
-    function handleSelection(index: number){
-        setSelectedOption(index)
-        updateState(options[index].value)
+    function handleSelection(selectedIndex: number){
+        setSelectedOption(selectedIndex)
         setDropdown(false)
+        persistData(options[selectedIndex].value)
     }
+
+    function persistData(inputValue: string){
+        // Persist input data into data object
+        if(dataObject[fieldId]===undefined){
+            console.error(`'${fieldId}' field doesn't exist in data object!!!`)
+            return
+        }
+        dataObject = {...dataObject, [fieldId]: inputValue}
+        updateFunct(dataObject)
+    }
+
     return ( 
         <div className="w-fit flex flex-col">
             {label}
