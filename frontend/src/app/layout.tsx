@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
@@ -31,8 +31,8 @@ export default function RootLayout({
             {children}
           </div>
           <div className="bg-white lg:hidden fixed z-[99] top-0 left-0 w-full h-full flex flex-col items-center justify-center gap-y-2">
-            <span>Not designed for the screen size!</span>
-            <span>Expand window or use a device with a wider screen (like a PC)</span>
+            <span className="text-center">Not designed for this screen size!</span>
+            <span className="text-center">Expand this window or use a device with a wider screen (like a PC)</span>
           </div>
       </body>
     </html>

@@ -28,12 +28,12 @@ const MainPage = () => {
     {label: '75%', value: '0.75'},
   ]
 
-  const audienceOptions = [
-    {label: 'IT Managers', value: '0'},
-    {label: 'Property Managers', value: '1'},
-    {label: 'Education Managers', value: '2'},
-    {label: 'Education Property Managers', value: '3'},
-  ]
+  // const audienceOptions = [
+  //   {label: 'IT Managers', value: '0'},
+  //   {label: 'Property Managers', value: '1'},
+  //   {label: 'Education Managers', value: '2'},
+  //   {label: 'Education Property Managers', value: '3'},
+  // ]
 
   function timeIntoRegistration(startDate: string, endDate: string) {
     const today = new Date();
@@ -48,8 +48,8 @@ const MainPage = () => {
     const totalDuration = end.getTime() - start.getTime();
     const elapsed = today.getTime() - start.getTime();
 
-    if (today < start) return 0;          // Not started yet
-    if (today > end) return 1;            // Already ended
+    if (today < start) return -0.1;          // Not started yet
+    if (today > end) return 1.1;            // Already ended
 
     const pct = elapsed / totalDuration;
     return Math.min(Math.max(pct, 0), 1); // Clamp between 0 and 1
@@ -78,12 +78,23 @@ const MainPage = () => {
     try {
 
       if(!(regStart) || !(regEnd)){
-        alert('Please fill in the date inputs')
+        window.alert('Please fill in the date inputs')
         return
       }
-      const response = await axios.post("http://localhost:8000/api/forecast", {
+
+      const autoTimeline = timeIntoRegistration(regStart, regEnd)
+
+      if(autoTimeline < 0){
+        window.alert("Invalid Timeline. Cannot use 'Auto' because registrations have not started.")
+        return
+      } else if(autoTimeline > 1){
+        window.alert("Invalid Timeline. Cannot use 'Auto' because registrations have already ended.")
+        return
+      }
+
+      const response = await axios.post("https://collaborative-app-dev.onrender.com/api/forecast", {
         current_reg: Number(currentReg),
-        timeline: timeline==='auto'? timeIntoRegistration(regStart, regEnd) : Number(timeline)
+        timeline: timeline==='auto'? autoTimeline : Number(timeline)
       });
 
       if(response.data){
@@ -116,7 +127,7 @@ const MainPage = () => {
   }
 
   return ( 
-    <div className="grow flex flex-col gap-y-5 overflow-scroll h-full">
+    <div className="grow flex flex-col gap-y-5 overflow-scroll h-full max-h-[550px]">
 
       <section className="w-full flex flex-col justify-center gap-y-2 px-5 flex-[23%]  rounded-2xl border-2 border-[#E6E8EB] bg-slate-50">
         <div className="flex gap-x-7 w-full h-fit">
