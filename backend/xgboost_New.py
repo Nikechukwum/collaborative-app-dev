@@ -32,7 +32,7 @@ def process_event(csv_path, event_name):
         return None
 
 # === AUTO-LOAD CSVs from folder ===
-event_folder = "events"  # Adjust to your folder
+event_folder = "events"
 all_snapshots = []
 
 for filename in os.listdir(event_folder):
@@ -53,7 +53,6 @@ print(f"Loaded {len(df_all)} snapshots from {len(all_snapshots)} event files.")
 X = df_all[["PctIntoRegPeriod", "CumulativeRegistrations"]]
 y = df_all["FinalRegistrations"]
 
-# Tree-based models don't need scaling, but safe to include
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 

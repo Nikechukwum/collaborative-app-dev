@@ -32,6 +32,7 @@ export const InputField = ({label, dataObject, fieldId, updateFunct, date}: Prop
             ):(
                 <input type="number" 
                 value={value}
+                placeholder="0"
                 onChange={(e)=>{persistData(e.target.value)}}
                 className="w-[130px] rounded-md border border-[#C2CDD8] pl-3.5 py-2 text-sm focus:outline-0 focus:border-black"/>
             )}
