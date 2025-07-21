@@ -11,9 +11,9 @@ const Sidebar = () => {
             <Link href={'/'} className={`flex p-2 rounded-lg ${pathname==='/'? 'bg-[#58A1E9] text-white':'text-black'}`}>
                 <HomeIcon fill={`${pathname==='/'? 'white':'black'}`}/> <span className="text-center grow">Dashboard</span>
             </Link>
-            <Link href={'/documentation'} className={`flex p-2 rounded-lg ${pathname==='/documentation'? 'bg-[#58A1E9] text-white':'text-black'}`}>
+            {/* <Link href={'/documentation'} className={`flex p-2 rounded-lg ${pathname==='/documentation'? 'bg-[#58A1E9] text-white':'text-black'}`}>
                 <DocumentIcon fill={`${pathname==='/documentation'? 'white':'black'}`}/> <span className="text-center grow">Documentation</span>
-            </Link>
+            </Link> */}
         </div>
      );
 }

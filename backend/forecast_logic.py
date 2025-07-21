@@ -203,7 +203,7 @@ def predict_final_registrations(
 
 # ///////////////////////////////////////////////////////////////////
 result = predict_final_registrations(
-    audience="All",
+    audience="IT Managers",
     current_regs=315,
     pct_duration_passed=0.25  # 60% duration passed
 )
