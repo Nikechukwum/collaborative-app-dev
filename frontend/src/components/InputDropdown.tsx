@@ -32,7 +32,7 @@ export const InputDropdown = ({label, dataObject, updateFunct, fieldId, options}
         <div className="w-fit flex flex-col">
             {label}
             <div className="relative grow">
-                <div className={` cursor-pointer w-fit min-w-[150px] max-w-[200px] rounded-md border border-[#C2CDD8] pl-3.5 pr-2 py-2 text-sm flex gap-x-2 items-center justify-between`} onClick={()=>{setDropdown(!dropdown)}}>
+                <div className={` cursor-pointer w-fit min-w-[160px] max-w-[200px] rounded-md border border-[#C2CDD8] pl-3.5 pr-3 py-2 text-sm flex gap-x-2 items-center justify-between`} onClick={()=>{setDropdown(!dropdown)}}>
                     <span className="truncate">{options[selectedOption].label}</span>
                     <DropdownIcon size={20} fill="black" className={`duration-100 shrink-0 ${dropdown? 'rotate-180':''}`}/>
                 </div>

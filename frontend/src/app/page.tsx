@@ -3,7 +3,7 @@
 import { Graph } from "@/components/Graph";
 import { InputDropdown } from "@/components/InputDropdown";
 import { InputField } from "@/components/InputText";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
 interface OutputTypes {
@@ -28,6 +28,12 @@ const MainPage = () => {
     {label: '75%', value: '0.75'},
   ]
 
+  useEffect(()=>{
+    if(inputs.timeline !== 'today'){
+      setInputs((prev)=> ({...prev, regStart: '', regEnd: ''}))
+    }
+  }, [inputs.timeline])
+
   function timeIntoRegistration(startDate: string, endDate: string) {
     const today = new Date();
     const start = new Date(startDate);
@@ -43,6 +49,9 @@ const MainPage = () => {
     if (today < start) return -0.1;  // Not started yet
     if (today > end) return 1.1;     // Already ended
 
+    const totalDays = totalDuration / (1000 * 60 * 60 * 24);
+    if (totalDays < 29) return -0.2;
+
     const pct = elapsed / totalDuration;
     return Math.min(Math.max(pct, 0), 1); // Clamp between 0 and 1
   }
@@ -52,25 +61,30 @@ const MainPage = () => {
     const {regStart, regEnd, timeline, currentReg} = inputs
     try {
 
-      if(!(regStart) || !(regEnd)){
-        window.alert('Please fill in the date inputs')
+      if(timeline === 'today' && (!(regStart) || !(regEnd))){
+        window.alert("Incomplete: Please fill in the date inputs if using the 'Calculate from today' option")
         return
       }
 
       const autoTimeline = timeIntoRegistration(regStart, regEnd)
 
       if(autoTimeline < 0){
-        window.alert("Invalid Timeline: Cannot use 'Today' because registrations have not started.")
+        if(autoTimeline === -0.2){
+          window.alert("Invalid timeline: Set a timeframe greater or equal to 30 days")
+          return
+        } else {
+          window.alert("Invalid timeline: Cannot use 'Calculate from today' because registrations have not started.")
+        }
         return
       } else if(autoTimeline > 1){
-        window.alert("Invalid Timeline: Cannot use 'Today' because registrations have already ended.")
+        window.alert("Invalid timeline: Cannot use 'Calculate from today' because registrations have already ended.")
         return
       }
 
       if(Number(currentReg) < 0){
         window.alert('Invalid input: Current registrations cannot be less than 0')
         return
-      }
+      } 
 
       const response = await axios.post("https://collaborative-app-dev.onrender.com/api/forecast", {
         current_reg: Number(currentReg),
@@ -85,7 +99,7 @@ const MainPage = () => {
           upper: upper,
           sd: sd,
           currentReg: currentReg, 
-          regEnd: regEnd,
+          regEnd: regEnd || 'the end of reg. period',
           timeline: timeline==='today'? timeIntoRegistration(regStart, regEnd) : Number(timeline)
         }))
       }
@@ -98,11 +112,11 @@ const MainPage = () => {
   }
 
   function calcForecastRange(){
-    const {forecast, lower} = outputs
-    if(!forecast || !lower){
+    const {forecast, upper} = outputs
+    if(!forecast || !upper){
       return ''
     }
-    const range = ((forecast-lower)/forecast) * 100
+    const range = ((upper-forecast)/forecast) * 100
     return ` ±${range.toFixed(2)}%`
   }
 
@@ -111,12 +125,21 @@ const MainPage = () => {
 
       <section className="w-full flex flex-col justify-center gap-y-2 px-5 flex-[23%]  rounded-2xl border-2 border-[#E6E8EB] bg-slate-50">
         <div className="flex gap-x-7 w-full h-fit">
+          <InputDropdown 
+          label={<span className="text-sm w-fit h-[50px] flex items-center">Time into registration period:</span>}
+          dataObject={inputs}
+          updateFunct={setInputs}
+          fieldId="timeline"
+          options={timelineOptions}
+          />
+
           <InputField 
           label={<span className="text-sm w-fit max-w-[170px] h-[50px] flex items-center">Registrations start date:</span>}
           dataObject={inputs}
           updateFunct={setInputs}
           fieldId="regStart"
           date
+          timeline={inputs.timeline}
           />
 
           <InputField 
@@ -125,21 +148,15 @@ const MainPage = () => {
           updateFunct={setInputs}
           fieldId="regEnd"
           date
+          timeline={inputs.timeline}
           />
 
           <InputField 
-          label={<span className="text-sm w-[130px] h-[50px] flex items-center">Current number of registrations:</span>}
+          label={<span className="text-sm w-fit h-[50px] flex items-center">Current number of registrations:</span>}
           dataObject={inputs}
           updateFunct={setInputs}
           fieldId="currentReg"
-          />
-
-          <InputDropdown 
-          label={<span className="text-sm w-fit max-w-[150px] h-[50px] flex items-center">Time into registration period:</span>}
-          dataObject={inputs}
-          updateFunct={setInputs}
-          fieldId="timeline"
-          options={timelineOptions}
+          timeline={inputs.timeline}
           />
 
         </div>

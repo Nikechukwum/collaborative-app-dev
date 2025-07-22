@@ -5,10 +5,12 @@ type Props = {
     updateFunct: Dispatch<SetStateAction<any>>;
     fieldId: string;
     dataObject: any;
-    date?: boolean
+    date?: boolean;
+    timeline: number|string
 }
-export const InputField = ({label, dataObject, fieldId, updateFunct, date}: Props) => {
+export const InputField = ({label, dataObject, fieldId, updateFunct, date, timeline}: Props) => {
     const[value, setValue] = useState(dataObject[fieldId] ?? '')
+    const disableDateInput = timeline !== 'today'
 
     function persistData(inputValue: string|boolean){
         setValue(inputValue)
@@ -25,10 +27,12 @@ export const InputField = ({label, dataObject, fieldId, updateFunct, date}: Prop
         <div className="w-fit flex flex-col">
             {label}
             {date? (
-                <input type="date" 
-                value={value}
-                onChange={(e)=>{persistData(e.target.value)}}
-                className="w-fit rounded-md border border-[#C2CDD8] pl-3.5 py-2 text-sm focus:outline-0 focus:border-black"/>
+                <input type={disableDateInput? 'text': 'date'}
+                value={disableDateInput? '': value}
+                placeholder="-------------"
+                onClick={()=> {disableDateInput? alert("Can't set dates if you're not using the 'Calculate from today' option"): null}}
+                onChange={(e)=>{persistData(disableDateInput? '' : e.target.value)}}
+                className={`w-fit max-w-[150px] ${disableDateInput? '!cursor-not-allowed':''} brightness-100 rounded-md border border-[#C2CDD8] pl-3.5 py-2 text-sm focus:outline-0 focus:border-black`}/>
             ):(
                 <input type="number" 
                 value={value}
