@@ -11,7 +11,9 @@ export const StepOne = ({changeStep}: Props) => {
             This is a simple predictive modelling application developed during my Master's program.
             It attempts to predict the amount of registrations an event organiser will have by the end of the event's registration period.
             <br /><br />
-            The model was trained using 9 datasets from real events within the UK from the past few years. The backend (containing the model) was dockerised and pushed to AWS Lambda which handles the requests from this client (the frontend).
+            The model was trained using 9 datasets from real events within the UK from the past few years. The backend (containing the model) was dockerised and pushed to AWS Lambda which handles the requests from this client (the frontend). <br /><br />
+            Note that this is just a proof of concept as the datasets provided were few and superficial in depth. With more events data, the results can be better streamlined. <br /><br />
+            - Nikechukwum Ene
 
             <div className="flex gap-x-5 mt-5">
                 <button className="flex justify-center items-center rounded-md bg-gray-500 w-[100px] h-[32px] text-sm text-white hover:cursor-pointer hover:scale-[1.03] active:scale-[1.07] origin-left" onClick={()=>{changeStep(-1)}}>
