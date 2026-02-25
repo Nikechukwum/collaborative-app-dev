@@ -86,7 +86,7 @@ const MainPage = () => {
         return
       } 
 
-      const response = await axios.post("https://collaborative-app-dev.onrender.com/api/forecast", {
+      const response = await axios.post("https://sog3y2wyablbjehk7yzzhsyzyq0niaca.lambda-url.eu-north-1.on.aws/api/forecast", {
         current_reg: Number(currentReg),
         timeline: timeline==='today'? autoTimeline : Number(timeline)
       });
@@ -126,7 +126,7 @@ const MainPage = () => {
       <section className="w-full flex flex-col justify-center gap-y-2 px-5 flex-[23%]  rounded-2xl border-2 border-[#E6E8EB] bg-slate-50">
         <div className="flex gap-x-7 w-full h-fit">
           <InputDropdown 
-          label={<span className="text-sm w-fit h-[50px] flex items-center">Time into registration period:</span>}
+          label={<span id="reg-period" className="text-sm w-fit h-[50px] flex items-center">Time into registration period:</span>}
           dataObject={inputs}
           updateFunct={setInputs}
           fieldId="timeline"
@@ -134,7 +134,7 @@ const MainPage = () => {
           />
 
           <InputField 
-          label={<span className="text-sm w-fit max-w-[170px] h-[50px] flex items-center">Registrations start date:</span>}
+          label={<span id="reg-start" className="text-sm w-fit max-w-[170px] h-[50px] flex items-center">Registrations start date:</span>}
           dataObject={inputs}
           updateFunct={setInputs}
           fieldId="regStart"
@@ -143,7 +143,7 @@ const MainPage = () => {
           />
 
           <InputField 
-          label={<span className="text-sm w-fit max-w-[170px] h-[50px] flex items-center">Registrations end date:</span>}
+          label={<span id="reg-end" className="text-sm w-fit max-w-[170px] h-[50px] flex items-center">Registrations end date:</span>}
           dataObject={inputs}
           updateFunct={setInputs}
           fieldId="regEnd"
@@ -152,7 +152,7 @@ const MainPage = () => {
           />
 
           <InputField 
-          label={<span className="text-sm w-fit h-[50px] flex items-center">Current number of registrations:</span>}
+          label={<span id="current-registrations" className="text-sm w-fit h-[50px] flex items-center">Current number of registrations:</span>}
           dataObject={inputs}
           updateFunct={setInputs}
           fieldId="currentReg"

@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({ 
   subsets: ["latin"], 
@@ -25,6 +26,7 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${inter.className} antialiased bg-[#F1F3F5]`}>
+          <Analytics />
           <Header />
           <div className="hidden lg:flex w-full h-[calc(100vh-100px)] gap-x-5 p-5">
             <Sidebar />
